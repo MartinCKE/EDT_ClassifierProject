@@ -1,8 +1,8 @@
 ''' Project '''
 
 import math
-import numpy
-import matplotlib as plt
+import numpy as np
+import matplotlib.pyplot as plt
 import os
 
 
@@ -11,8 +11,9 @@ __location__ = os.path.realpath(
 
 irisDataLoc = os.path.join(__location__, 'Data/Iris_TTT4275/iris.data')
 
-with open(irisDataLoc) as file: ##
-    for line in file:
-        print(line)
-        for word in line:
-            print(word)
+data = np.genfromtxt(irisDataLoc, dtype=None, delimiter=',', usecols=[0,1,2,3])
+print(data)
+
+plt.matshow(data)
+plt.ylabel('irisData')
+plt.show()
