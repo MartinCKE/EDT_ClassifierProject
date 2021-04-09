@@ -18,35 +18,34 @@ nSamplesPerClass = 50
 nClasses = 3
 nFeatures = 4
 classLabels = ['Setosa','Versicolor','Virginica']
+features = ['Sepal length', 'Sepal width', 'Petal length', 'Petal width']
+
+nTraining = 20
 
 
 def main():
     __location__ = os.path.realpath(
         os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-    #data = np.genfromtxt(irisDataLoc, dtype=None, delimiter=',', usecols=[0,1,2,3])
-
-    #NClasses = 3
-
-
     data = loadData()
-    trainingData, testingData = splitData(data, 20)
+    trainingData, testingData = splitData(data, nTraining)
 
     trainingData = normalize(trainingData)
     testingData = normalize(testingData)
     W = training(trainingData)
     confMatrix = confusionMatrixCalc(W, testingData)
-    errorRate = findErrorRate(confMatrix)
-    print("With %d training samples, the error rate is %2f %%" %(20, errorRate))
+    plotHistograms(data, 0.1)
 
 
 
 def findErrorRate(confusionMatrix):
-    print("jhasbfjavfh", confusionMatrix)
+    ''' Calculates error rate from confusion matrix '''
     errorRate = (1-np.sum(confusionMatrix.diagonal())/np.sum(confusionMatrix))*100
     return errorRate
-## Maybe use this for testing ###
+
+
 def normalize(data):
+    ''' Function which normalizes input data '''
     tempFeatures = data[:, 0:-2]
     tempClass = data[:,-2:]
     tempFeatures = tempFeatures/tempFeatures.max(axis=0)
@@ -69,11 +68,9 @@ def training(trainingData, nIterations = 1000, alpha = 0.05):
 
     '''
     W = np.zeros((nClasses, nFeatures+1))
-    #print("W shape = ", W.shape)
     tk_temp = np.zeros((nClasses, 1))
-    #print(tk_temp)
     gk = np.zeros((nClasses))
-    gk[0] = 1
+    #gk[0] = 1
     MSE = np.zeros(nIterations)
     mselist = []
     for i in range(nIterations):
@@ -82,9 +79,6 @@ def training(trainingData, nIterations = 1000, alpha = 0.05):
 
         for xk in trainingData: ## Iterating through each single input
 
-            #xk = np.insert(xk, -1, 0)
-            #xk = np.append(xk, 1) ## Adding a one
-            #print(xk[:-1])
             zk = np.matmul(W,(xk[:-1]))[np.newaxis].T
 
             gk = sigmoid(zk)
@@ -133,13 +127,12 @@ def confusionMatrixCalc(W, testingData):
     im = ax.imshow(confusionMatrix, cmap='copper')
     ax.set_xticks(np.arange(0, nClasses))
     ax.set_yticks(np.arange(0, nClasses))
-    # ... and label them with the respective list entries
     ax.set_xticklabels(classLabels)
     ax.set_yticklabels(classLabels)
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
          rotation_mode="anchor")
 
-    # Creating plot text annotations
+    # Creating text annotations
     for i in range(0, nClasses):
         for j in range(0, nClasses):
             text = ax.text(j, i, confusionMatrix[i,j],
@@ -147,18 +140,30 @@ def confusionMatrixCalc(W, testingData):
 
     ax.set_title("Heatmap visualizing confusion matrix")
     fig.tight_layout()
-    #cax = divider.a
     plt.colorbar(im)#, cax=cax)
+    errorRate = findErrorRate(confusionMatrix)
+
+    textstr = ('Error rate = %.1f %%' %errorRate)
+
+    #plt.text(-1, -0.5, textstr, fontsize=14, color="red")
+    plt.legend(title=textstr, bbox_to_anchor=(1, 1), loc='upper right', fontsize=8)
 
     plt.show()
     return confusionMatrix
 
 
-def plotHistograms(X):
-    pass
+def plotHistograms(data, binStep):
+
+    for features in range(0, nFeatures):
+        print(features)
+
+
+
+
+
 
 def sigmoid(x):
-    ''' Simple function for calculating sigmoid '''
+    ''' Calculating sigmoid function '''
     return np.array(1 / (1 + np.exp(-x)))
 
 def splitData(data, nTraining):
