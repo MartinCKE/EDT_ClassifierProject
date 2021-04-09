@@ -31,25 +31,20 @@ def main():
 
     data = loadData()
     trainingData, testingData = splitData(data, 30)
-    for i in trainingData:
-        print("okei", i)
+
     trainingData = normalize(trainingData)
     testingData = normalize(testingData)
-    training(trainingData)
+    W = training(trainingData)
+    confMatrix = confusionMatrixCalc(W, testingData)
 
-    #load_data()
-
-    #training(t)
-
-    #GetConfusionMatrix(t)
 
 
 ## Maybe use this for testing ###
 def normalize(data):
-    temp = data
-    temp = temp/temp.max(axis=0)
-    data = temp
-
+    tempFeatures = data[:, 0:-2]
+    tempClass = data[:,-2:]
+    tempFeatures = tempFeatures/tempFeatures.max(axis=0)
+    data = np.append(tempFeatures, tempClass, axis=1)
     return data
 
 
@@ -68,52 +63,66 @@ def training(trainingData, nIterations = 1000, alpha = 0.05):
 
     '''
     W = np.zeros((nClasses, nFeatures+1))
-    print("W shape = ", W.shape)
+    #print("W shape = ", W.shape)
     tk_temp = np.zeros((nClasses, 1))
-    print(tk_temp)
+    #print(tk_temp)
     gk = np.zeros((nClasses))
     gk[0] = 1
     MSE = np.zeros(nIterations)
     mselist = []
     for i in range(nIterations):
-    #    MSE = 0 ## Mean Square Error
         G_W_MSE = 0 ## Gradient of W_MSE
         testcounter = 0
+
         for xk in trainingData: ## Iterating through each single input
 
-
-            xk = np.insert(xk, -1, 0) ## Adding a one
+            #xk = np.insert(xk, -1, 0)
+            #xk = np.append(xk, 1) ## Adding a one
+            #print(xk[:-1])
             zk = np.matmul(W,(xk[:-1]))[np.newaxis].T
+
             gk = sigmoid(zk)
 
+            ## Updating target vector
             tk_temp *= 0
             tk_temp[int(xk[-1]),:] = 1
             tk = tk_temp
 
+            # Finding gradients for MSE calculation
             G_gk_MSE = gk-tk
             G_zk_g = np.multiply(gk, (1-gk))
             G_W_zk = xk[:-1].reshape(1,nFeatures+1) ### la til +1 her
 
+
             G_W_MSE += np.matmul(np.multiply(G_gk_MSE, (1-gk)), G_W_zk) ## Eq 22
 
 
-
             MSE[i] += 0.5* np.matmul((gk-tk).T,(gk-tk))
-            #MSEtest += 0.5* np.matmul((gk-tk).T,(gk-tk))
-            testcounter+=1
-            if testcounter > 20:
-                pass#break
 
 
+        # Moving W in opposite direction of the gradient
         W -= alpha*G_W_MSE
 
-    plt.plot(MSE)
+    #plt.plot(MSE)
+    #plt.show()
+    return W
+
+
+
+def confusionMatrixCalc(W, testingData):
+
+    confusionMatrix = np.zeros((nClasses, nClasses), dtype='float')
+
+    for i in range(len(testingData)):
+        classPrediction = int(np.argmax(np.matmul(W, testingData[i,0:5])))
+        print("test", testingData[i,0:4])
+        classActual = int(testingData[i, -1])
+        confusionMatrix[classPrediction, classActual] += 1
+    print(confusionMatrix)
+    ## Plotting
+    plt.imshow(confusionMatrix, cmap='hot', interpolation='nearest')
     plt.show()
 
-
-
-def GetConfusionMatrix(t):
-    pass
 
 def plotHistograms(X):
     pass
@@ -144,10 +153,18 @@ def splitData(data, nTraining):
         classNdata = data[(i*nSamplesPerClass):((i+1)*nSamplesPerClass), :] ## Gets the 50 values for each class
         trainingData[(i*nTraining):((i+1)*nTraining),:] = classNdata[:nTraining,:]
         testData[(i*nTest):((i+1)*nTest),:] = classNdata[nTraining:, :]
+    #print("before", trainingData[0:])
+
+    ## Adding column of ones due to size differences in classification algorithm
+    testData = np.insert(testData, -1, np.ones(testData.shape[0]), axis = 1)
+    trainingData = np.insert(trainingData, -1, np.ones(trainingData.shape[0]), axis = 1)
+    #print("now", trainingData)
+    #print("class = ", testData[20,-1])
+    #quit()
+
 
     return trainingData, testData
-#
-#
+
 
 
 def loadData():
