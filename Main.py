@@ -17,7 +17,7 @@ irisDataLoc = os.path.join(__location__, 'Data/Iris_TTT4275/iris.data')
 nSamplesPerClass = 50
 nClasses = 3
 nFeatures = 4
-
+classLabels = ['Setosa','Versicolor','Virginica']
 
 
 def main():
@@ -27,18 +27,24 @@ def main():
     #data = np.genfromtxt(irisDataLoc, dtype=None, delimiter=',', usecols=[0,1,2,3])
 
     #NClasses = 3
-    classLabels = ['Setosa','Versicolor','Virginica']
+
 
     data = loadData()
-    trainingData, testingData = splitData(data, 30)
+    trainingData, testingData = splitData(data, 20)
 
     trainingData = normalize(trainingData)
     testingData = normalize(testingData)
     W = training(trainingData)
     confMatrix = confusionMatrixCalc(W, testingData)
+    errorRate = findErrorRate(confMatrix)
+    print("With %d training samples, the error rate is %2f %%" %(20, errorRate))
 
 
 
+def findErrorRate(confusionMatrix):
+    print("jhasbfjavfh", confusionMatrix)
+    errorRate = (1-np.sum(confusionMatrix.diagonal())/np.sum(confusionMatrix))*100
+    return errorRate
 ## Maybe use this for testing ###
 def normalize(data):
     tempFeatures = data[:, 0:-2]
@@ -114,14 +120,38 @@ def confusionMatrixCalc(W, testingData):
     confusionMatrix = np.zeros((nClasses, nClasses), dtype='float')
 
     for i in range(len(testingData)):
+        ## Predicting class by using weight matrix
         classPrediction = int(np.argmax(np.matmul(W, testingData[i,0:5])))
         print("test", testingData[i,0:4])
         classActual = int(testingData[i, -1])
         confusionMatrix[classPrediction, classActual] += 1
     print(confusionMatrix)
+
     ## Plotting
-    plt.imshow(confusionMatrix, cmap='hot', interpolation='nearest')
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(confusionMatrix, cmap='copper')
+    ax.set_xticks(np.arange(0, nClasses))
+    ax.set_yticks(np.arange(0, nClasses))
+    # ... and label them with the respective list entries
+    ax.set_xticklabels(classLabels)
+    ax.set_yticklabels(classLabels)
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+         rotation_mode="anchor")
+
+    # Creating plot text annotations
+    for i in range(0, nClasses):
+        for j in range(0, nClasses):
+            text = ax.text(j, i, confusionMatrix[i,j],
+                           ha="center", va="center", color="w")
+
+    ax.set_title("Heatmap visualizing confusion matrix")
+    fig.tight_layout()
+    #cax = divider.a
+    plt.colorbar(im)#, cax=cax)
+
     plt.show()
+    return confusionMatrix
 
 
 def plotHistograms(X):
