@@ -29,10 +29,9 @@ def main():
     print("Loading iris dataset...")
     data = loadData()
 
-    #### PLOTTING HISTOGRAMS ####
+    #Plot histogram from dataset
+    plotHistograms(data)
 
-
-    #########
 
     #### Training and classifying ####
     trainingData, testingData = splitData(data, nTraining)
@@ -203,39 +202,29 @@ def removeFeatures(data, featuresToRemove):
 
 
 
-def plotHistograms(data, step):
-    for features in range(0, nFeatures):
-        print(features)
-    f, axis = plt.subplots(2,2, sharex='col', sharey='row')
-    max_val = np.amax(data)         # Finds maxvalue in samples
-    N = int(data.shape[0]/nClasses)    # slice variables used for slicing samples by class
+def plotHistograms(data):
+    #Parse iris-data and histogramplot datasets in species with features format
+    col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Species']
+    iris = pd.DataFrame(data, columns=col)
 
-    # Create bins (sizes of histogram boxes)
-    bins = np.linspace(0.0 ,int(max_val+step), num=int((max_val/step)+1), endpoint=False)
+    iris_setosa = iris.loc[iris["Species"]=="0.0"]
+    iris_versicolor = iris.loc[iris["Species"]=="1.0"]
+    iris_virginica = iris.loc[iris["Species"]=="2.0"]
 
-    legends = ['Class 1: Setosa', 'Class 2: Versicolour', 'Class 3: Virginica']
-    colors = ['Red', 'Blue', 'lime']
-    features = {0: 'sepal length',
-                1: 'sepal width',
-                2: 'petal length',
-                3: 'petal width'}
-
-    for feature in features:
-        axis_slice = str(bin(feature)[2:].zfill(2))
-        plt_axis = axis[int(axis_slice[0]),int(axis_slice[1])]
-        # Slices samples by class
-        samples = [data[:N, feature], data[N:2*N, feature], data[2*N:, feature]]
-
-        # Creates plots, legends and subtitles
-        for i in range(3):
-            plt_axis.hist(samples[i], bins, alpha=0.5, stacked=True, label=legends[i], color=colors[i])
-        plt_axis.legend(prop={'size': 7})
-        plt_axis.set_title(f'feature {feature+1}: {features[feature]}')
-
-    for ax in axis.flat:
-        ax.set(xlabel='Measure [cm]', ylabel='Number of samples')
-        ax.label_outer() # Used to share labels on y-axis and x-axis
-    plt.show()
+    fig, axes = plt.subplots(2, 2, figsize=(10,8))
+    fig.suptitle("Distribution of species based on features")
+    #sepal length
+    slp = sns.histplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal length [cm]", kde=True)
+    slp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'])
+    #sepal width
+    swp = sns.histplot(ax=axes[0,1], data=iris, hue="Species", x="Sepal width [cm]", kde=True)
+    swp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'])
+    #petal length
+    plp = sns.histplot(ax=axes[1,0], data=iris, hue="Species", x="Petal length [cm]", kde=True)
+    plp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'])
+    #petal width
+    pwp = sns.histplot(ax=axes[1,1], data=iris, hue="Species", x="Petal width [cm]", kde=True)
+    pwp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'])
 
 
 def sigmoid(x):
