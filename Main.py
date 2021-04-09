@@ -4,6 +4,8 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import pandas as pd
+import seaborn as sns
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -28,6 +30,28 @@ def main():
         os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
     data = loadData()
+
+
+    #--------------histogramfunc------------------
+    #Parse iris-data and histogramplot datasets in species with features format
+    col=['sepal length','sepal width','petal length','petal width','type']
+    iris = pd.DataFrame(data, columns=col)
+    #print("first five rows")
+    #print(iris.head)
+
+    iris_setosa = iris.loc[iris["type"]=="0.0"]
+    iris_virginica = iris.loc[iris["type"]=="1.0"]
+    iris_versicolor = iris.loc[iris["type"]=="2.0"]
+
+    sns.FacetGrid(iris,hue="type",size=3).map(sns.distplot,"petal length").add_legend()
+    sns.FacetGrid(iris,hue="type",size=3).map(sns.distplot,"petal width").add_legend()
+    sns.FacetGrid(iris,hue="type",size=3).map(sns.distplot,"sepal length").add_legend()
+    sns.FacetGrid(iris,hue="type",size=3).map(sns.distplot,"sepal width").add_legend()
+    plt.show()
+
+    #--------histogramfunc end---------
+
+
     trainingData, testingData = splitData(data, nTraining)
 
     trainingData = normalize(trainingData)
