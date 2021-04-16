@@ -18,66 +18,73 @@ nClasses = 3
 nFeatures = 4
 classLabels = ['Setosa','Versicolor','Virginica']
 features = ['Sepal length', 'Sepal width', 'Petal length', 'Petal width']
-nTraining = 20
-nIterations = 1000
+nTraining = 10
+nIterations = 2000
 
 
 def main():
-    __location__ = os.path.realpath(
-        os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    #__location__ = os.path.realpath(
+    #    os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
     print("Loading iris dataset...")
     data = loadData()
+    print(data[0,:])
 
-    #Plot histogram from dataset
-    plotHistograms(data)
+    ### Plot histograms of dataset ###
+    print("Plotting histograms of species and features...")
+    #plotHistograms(data)
+
+    ### Normalizing data ###
+    print("Normalizing data...")
+    data = normalize(data)
 
 
     #### Training and classifying ####
+    nTraining = 30
     trainingData, testingData = splitData(data, nTraining)
-    trainingData = normalize(trainingData)
-    testingData = normalize(testingData)
+    print("train", trainingData)
+    print("test", testingData)
     print("Training classifier with %d iterations and %d training " \
             "samples from each class." %(nIterations, nTraining))
     W = training(trainingData, nIterations)
-    #print("MSE", MSE)
-    #print("W", type(W))
-    print("Plotting confusion matrix...")
-    confMatrix = confusionMatrixCalc(W, testingData)
-    plotConfusionMatrix(confMatrix, nTraining)
+
+    print("Plotting confusion matrix for training data...")
+    confMatrix = confusionMatrixCalc(W, trainingData)
+    plotConfusionMatrix(confMatrix)
+
+    print("Plotting confusion matrix for testing data...")
+    confMatrix2 = confusionMatrixCalc(W, testingData)
+    plotConfusionMatrix(confMatrix2)
 
     #### Removing features and repeating ####
-    print("Removing features and repeating training")
-    data = removeFeatures(data, [0,2,3])
-
-    trainingData, testingData = splitData(data, nTraining)
-
-    trainingData = normalize(trainingData)
-    testingData = normalize(testingData)
-    W = training(trainingData, nIterations)
-    confMatrix = confusionMatrixCalc(W, testingData)
-    plotConfusionMatrix(confMatrix, nTraining)
-    #plotHistograms(data, 0.1)
+    # print("Removing features and repeating training")
+    # data = removeFeatures(data, [1])
+    # trainingData, testingData = splitData(data, nTraining)
+    # trainingData = normalize(trainingData)
+    # testingData = normalize(testingData)
+    # W = training(trainingData, nIterations)
+    # confMatrix = confusionMatrixCalc(W, testingData)
+    # plotConfusionMatrix(confMatrix, nTraining)
     plt.show()
 
 
 
-def findErrorRate(confusionMatrix):
+def findErrorRate(X):
     ''' Calculates error rate from confusion matrix '''
-    errorRate = (1-np.sum(confusionMatrix.diagonal())/np.sum(confusionMatrix))*100
+    errorRate = (1-np.sum(X.diagonal())/np.sum(X))*100
     return errorRate
 
 
 def normalize(data):
-    ''' Function which normalizes the feature measures  '''
-    tempFeatures = data[:, 0:-2]
-    tempClass = data[:,-2:]
+    ''' Function which normalizes the feature values in dataset  '''
+    tempFeatures = data[:, :-1]
+    tempClass = data[:,-1:]
     tempFeatures = tempFeatures/tempFeatures.max(axis=0)
     data = np.append(tempFeatures, tempClass, axis=1)
     return data
 
 
-def training(trainingData, nIterations = 1000, alpha = 0.05):
+def training(trainingData, nIterations, alpha = 0.05):
 
     ''' Training algorithm
 
@@ -132,7 +139,6 @@ def training(trainingData, nIterations = 1000, alpha = 0.05):
     plt.title("MSE converging over %d iterations "\
               "when %d features are used" %(nIterations, nFeatures))
     plt.plot(MSE)
-    plot = False
     plt.show()
 
     return W
@@ -143,9 +149,9 @@ def confusionMatrixCalc(W, testingData):
     ''' Function which calculates the confusion matrix
         from trained classifier weight matrix and testing data.
     '''
-    print("W er", W)
-    confusionMatrix = np.zeros((nClasses, nClasses), dtype='float')
 
+    confusionMatrix = np.zeros((nClasses, nClasses), dtype='int')
+    #print("Herda", range(len(testingData)))
     for i in range(len(testingData)):
         ### Predicting class by using weight matrix
         classPrediction = int(np.argmax(np.matmul(W, testingData[i,0:testingData.shape[1]-1])))
@@ -154,15 +160,14 @@ def confusionMatrixCalc(W, testingData):
         ### Adding prediction to confusion matrix
         confusionMatrix[classPrediction, classActual] += 1
 
-    print(confusionMatrix)
+    print("Confusion matrix", confusionMatrix)
     return confusionMatrix
 
 
-def plotConfusionMatrix(confusionMatrix, nTraining):
+def plotConfusionMatrix(confusionMatrix):
     ''' Function which plots confusion matrix as heat map with
         calculated error rate.
     '''
-
     ## Plotting
     fig, ax = plt.subplots()
     im = ax.imshow(confusionMatrix, cmap='copper')
@@ -171,11 +176,12 @@ def plotConfusionMatrix(confusionMatrix, nTraining):
     ax.set_xticklabels(classLabels)
     ax.set_yticklabels(classLabels)
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-         rotation_mode="anchor")
+             rotation_mode="anchor")
 
     ### Plotting error rate within heat map ###
     errorRate = findErrorRate(confusionMatrix)
-    textstr = ('Error rate = %.1f %%\n nTraining = %d' %(errorRate, nTraining))
+    print("errorRate = ", errorRate)
+    textstr = ('Error rate = %.1f %%\n nTraining = 30' %(errorRate))
     textBox = dict(boxstyle='round', facecolor='white', alpha=0.5)
     ax.text(0.60, 0.97, textstr, transform=ax.transAxes, fontsize=10,
         verticalalignment='top', bbox=textBox)
@@ -189,6 +195,7 @@ def plotConfusionMatrix(confusionMatrix, nTraining):
     ax.set_title("Heatmap visualizing confusion matrix")
     fig.tight_layout()
     plt.colorbar(im)
+    plt.show()
 
 
 def removeFeatures(data, featuresToRemove):
@@ -203,6 +210,9 @@ def removeFeatures(data, featuresToRemove):
 
 
 def plotHistograms(data):
+    ''' Function for plotting histogram of iris dataset with its classes by
+        different features.
+    '''
     #Parse iris-data and histogramplot datasets in species with features format
     col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Species']
     iris = pd.DataFrame(data, columns=col)
@@ -211,21 +221,21 @@ def plotHistograms(data):
     iris_versicolor = iris.loc[iris["Species"]=="1.0"]
     iris_virginica = iris.loc[iris["Species"]=="2.0"]
 
-    fig, axes = plt.subplots(2, 2, figsize=(10,8))
-    fig.suptitle("Distribution of species based on features")
+    fig, axes = plt.subplots(2, 2, figsize=(8,8))
+    fig.suptitle("Distribution of species based on features, bin width=0.5cm")
     #sepal length
-    slp = sns.histplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal length [cm]", kde=True)
+    slp = sns.histplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal length [cm]", kde=True, binwidth=0.1, palette='copper')
     slp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'])
     #sepal width
-    swp = sns.histplot(ax=axes[0,1], data=iris, hue="Species", x="Sepal width [cm]", kde=True)
+    swp = sns.histplot(ax=axes[0,1], data=iris, hue="Species", x="Sepal width [cm]", kde=True, binwidth=0.1, palette='copper')
     swp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'])
     #petal length
-    plp = sns.histplot(ax=axes[1,0], data=iris, hue="Species", x="Petal length [cm]", kde=True)
+    plp = sns.histplot(ax=axes[1,0], data=iris, hue="Species", x="Petal length [cm]", kde=True, binwidth=0.1, palette='copper')
     plp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'])
     #petal width
-    pwp = sns.histplot(ax=axes[1,1], data=iris, hue="Species", x="Petal width [cm]", kde=True)
+    pwp = sns.histplot(ax=axes[1,1], data=iris, hue="Species", x="Petal width [cm]", kde=True, binwidth=0.1, palette='copper')
     pwp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'])
-
+    plt.show()
 
 def sigmoid(x):
     ''' Calculating sigmoid function '''
@@ -272,7 +282,7 @@ def loadData():
         rawData[i][4] = classID
 
     ### Converting from string to float
-    data = rawData.astype(np.float)
+    data = rawData.astype(float)
     return data
 
 if __name__ == '__main__':
