@@ -18,54 +18,149 @@ nClasses = 3
 nFeatures = 4
 classLabels = ['Setosa','Versicolor','Virginica']
 features = ['Sepal length', 'Sepal width', 'Petal length', 'Petal width']
-nTraining = 10
-nIterations = 2000
 
 
 def main():
-    #__location__ = os.path.realpath(
-    #    os.path.join(os.getcwd(), os.path.dirname(__file__)))
-
     print("Loading iris dataset...")
     data = loadData()
     print(data[0,:])
 
-    ### Plot histograms of dataset ###
-    print("Plotting histograms of species and features...")
-    #plotHistograms(data)
+    ## Scatter plot
+    print("Plotting scatterplot of iris data...")
+    scatterPlot(data)
+
+
 
     ### Normalizing data ###
     print("Normalizing data...")
     data = normalize(data)
 
-
     #### Training and classifying ####
+
+    ## Task 1 a-c ##
     nTraining = 30
+    nIterations = 5000
     trainingData, testingData = splitData(data, nTraining)
-    print("train", trainingData)
-    print("test", testingData)
+    #print("train", trainingData)
+    #print("test", testingData)
     print("Training classifier with %d iterations and %d training " \
             "samples from each class." %(nIterations, nTraining))
     W = training(trainingData, nIterations)
-
-    print("Plotting confusion matrix for training data...")
+#
+    print("Plotting confusion matrix and finding error rate for training data...")
     confMatrix = confusionMatrixCalc(W, trainingData)
     plotConfusionMatrix(confMatrix)
-
-    print("Plotting confusion matrix for testing data...")
+#
+    print("Plotting confusion matrix and finding error rate for testing data...")
+    confMatrix2 = confusionMatrixCalc(W, testingData)
+    plotConfusionMatrix(confMatrix2)
+#
+    #Task 1 d-e ##
+    nTraining = 30
+    nIterations = 5000
+    trainingData, testingData = splitData(data, nTraining, Flip=True)
+#
+    print("Training classifier with %d iterations and %d training " \
+            "samples, using %d last samples." %(nIterations, nTraining, nTraining))
+    W = training(trainingData, nIterations)
+#
+    print("Plotting confusion matrix and finding error rate for training data...")
+    confMatrix = confusionMatrixCalc(W, trainingData)
+    plotConfusionMatrix(confMatrix)
+#
+    print("Plotting confusion matrix and finding error rate for testing data...")
     confMatrix2 = confusionMatrixCalc(W, testingData)
     plotConfusionMatrix(confMatrix2)
 
+    ## Task 2 ##
+    ### Plot histograms of dataset ###
+    print("Plotting histograms of species and features...")
+    plotHistograms(data)
+
     #### Removing features and repeating ####
-    # print("Removing features and repeating training")
-    # data = removeFeatures(data, [1])
-    # trainingData, testingData = splitData(data, nTraining)
-    # trainingData = normalize(trainingData)
-    # testingData = normalize(testingData)
-    # W = training(trainingData, nIterations)
-    # confMatrix = confusionMatrixCalc(W, testingData)
-    # plotConfusionMatrix(confMatrix, nTraining)
+    print("Removing feature with most overlap...")
+    print("which is sepal width.")
+    data = removeFeatures(data, [1])
+    trainingData, testingData = splitData(data, nTraining)
+
+    print("Training classifier with %d iterations and %d training " \
+         "samples, using %d last samples." %(nIterations, nTraining, nTraining))
+
+    W = training(trainingData, nIterations)
+
+    print("Plotting confusion matrix and finding error rate for training data...")
+    confMatrix = confusionMatrixCalc(W, trainingData)
+    plotConfusionMatrix(confMatrix)
+
+    print("Plotting confusion matrix and finding error rate for testing data...")
+    confMatrix2 = confusionMatrixCalc(W, testingData)
+    plotConfusionMatrix(confMatrix2)
+
+    print("Now removing one more feature (the one with most overlap)...")
+    print("which is sepal length")
+    data = removeFeatures(data, [0])
+    trainingData, testingData = splitData(data, nTraining)
+
+    print("Training classifier with %d iterations and %d training " \
+         "samples, using %d last samples." %(nIterations, nTraining, nTraining))
+
+    W = training(trainingData, nIterations)
+    print("Weight matrix", W)
+
+    print("Plotting confusion matrix and finding error rate for training data...")
+    confMatrix = confusionMatrixCalc(W, trainingData)
+
+    plotConfusionMatrix(confMatrix)
+    print("Plotting confusion matrix and finding error rate for testing data...")
+    confMatrix2 = confusionMatrixCalc(W, testingData)
+    plotConfusionMatrix(confMatrix2)
+
+
+    print("Removing petal length, so only petal width is used is classifier")
+    data = removeFeatures(data, [0])
+    trainingData, testingData = splitData(data, nTraining)
+
+    print("Training classifier with %d iterations and %d training " \
+         "samples, using %d last samples." %(nIterations, nTraining, nTraining))
+
+    W = training(trainingData, nIterations)
+    print("Weight matrix", W)
+
+    print("Plotting confusion matrix and finding error rate for training data...")
+    confMatrix = confusionMatrixCalc(W, trainingData)
+    plotConfusionMatrix(confMatrix)
+    print("Plotting confusion matrix and finding error rate for testing data...")
+    confMatrix2 = confusionMatrixCalc(W, testingData)
+    plotConfusionMatrix(confMatrix2)
+
+
+def scatterPlot(data):
+    col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Species']
+    iris = pd.DataFrame(data, columns=col)
+
+    iris_setosa = iris.loc[iris["Species"]=="0.0"]
+    iris_versicolor = iris.loc[iris["Species"]=="1.0"]
+    iris_virginica = iris.loc[iris["Species"]=="2.0"]
+
+    fig, axes = plt.subplots(2, 2, figsize=(6,6))
+    fig.suptitle("Scatter plot of species with certain features")
+
+    #sepal length
+    slp = sns.scatterplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal width [cm]", y="Sepal length [cm]", palette='copper')
+    slp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
+    #plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    #sepal width
+    swp = sns.scatterplot(ax=axes[0,1], data=iris, hue="Species", x="Petal width [cm]", y="Petal length [cm]", palette='copper')
+    swp.legend(title='Species', loc='upper left', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
+    #petal length
+    plp = sns.scatterplot(ax=axes[1,0], data=iris, hue="Species", x="Sepal width [cm]", y="Petal length [cm]", palette='copper')
+    plp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
+    #petal width
+    pwp = sns.scatterplot(ax=axes[1,1], data=iris, hue="Species", x="Petal width [cm]", y="Sepal length [cm]", palette='copper')
+    pwp.legend(title='Species', loc='upper left', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
     plt.show()
+
+
 
 
 
@@ -141,6 +236,7 @@ def training(trainingData, nIterations, alpha = 0.05):
     plt.plot(MSE)
     plt.show()
 
+    print("Weight matrix = ", W)
     return W
 
 
@@ -208,7 +304,6 @@ def removeFeatures(data, featuresToRemove):
     return np.delete(data, featuresToRemove, axis=1)
 
 
-
 def plotHistograms(data):
     ''' Function for plotting histogram of iris dataset with its classes by
         different features.
@@ -241,7 +336,7 @@ def sigmoid(x):
     ''' Calculating sigmoid function '''
     return np.array(1 / (1 + np.exp(-x)))
 
-def splitData(data, nTraining):
+def splitData(data, nTraining, Flip = False):
     '''
         Function for slitting data in to training and testing arrays
         Returns two numpy arrays (test and training) containing feature columns
@@ -256,11 +351,18 @@ def splitData(data, nTraining):
     trainingData = np.zeros((nTraining*nClasses, nFeatures+1))
     testData = np.zeros((nTest*nClasses, nFeatures+1))
 
+
     ### Iterating over classes and splitting data
     for i in range(nClasses):
         classNdata = data[(i*nSamplesPerClass):((i+1)*nSamplesPerClass), :] ## Gets the 50 values for each class
-        trainingData[(i*nTraining):((i+1)*nTraining),:] = classNdata[:nTraining,:]
-        testData[(i*nTest):((i+1)*nTest),:] = classNdata[nTraining:, :]
+
+        if Flip:
+            trainingData[(i*nTraining):((i+1)*nTraining),:] = classNdata[nTest:,:]
+            testData[(i*nTest):((i+1)*nTest),:] = classNdata[nTraining:, :]
+
+        else:
+            trainingData[(i*nTraining):((i+1)*nTraining),:] = classNdata[:nTraining,:]
+            testData[(i*nTest):((i+1)*nTest),:] = classNdata[nTraining:, :]
 
     ## Adding column of ones due to size differences in classification algorithm
     testData = np.insert(testData, -1, np.ones(testData.shape[0]), axis = 1)
