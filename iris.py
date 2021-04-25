@@ -23,7 +23,6 @@ features = ['Sepal length', 'Sepal width', 'Petal length', 'Petal width']
 def main():
     print("Loading iris dataset...")
     data = loadData()
-    print(data[0,:])
 
     ## Scatter plot
     print("Plotting scatterplot of iris data...")
@@ -39,7 +38,7 @@ def main():
 
     ## Task 1 a-c ##
     nTraining = 30
-    nIterations = 5000
+    nIterations = 4000
     trainingData, testingData = splitData(data, nTraining)
     #print("train", trainingData)
     #print("test", testingData)
@@ -49,28 +48,28 @@ def main():
 #
     print("Plotting confusion matrix and finding error rate for training data...")
     confMatrix = confusionMatrixCalc(W, trainingData)
-    plotConfusionMatrix(confMatrix)
+    plotConfusionMatrix(confMatrix, len(trainingData[0])-2)
 #
     print("Plotting confusion matrix and finding error rate for testing data...")
     confMatrix2 = confusionMatrixCalc(W, testingData)
-    plotConfusionMatrix(confMatrix2)
-#
+    plotConfusionMatrix(confMatrix2, len(trainingData[0])-2)
+
     #Task 1 d-e ##
     nTraining = 30
-    nIterations = 5000
+    nIterations = 4000
     trainingData, testingData = splitData(data, nTraining, Flip=True)
-#
+
     print("Training classifier with %d iterations and %d training " \
             "samples, using %d last samples." %(nIterations, nTraining, nTraining))
     W = training(trainingData, nIterations)
-#
+
     print("Plotting confusion matrix and finding error rate for training data...")
     confMatrix = confusionMatrixCalc(W, trainingData)
-    plotConfusionMatrix(confMatrix)
-#
+    plotConfusionMatrix(confMatrix, len(trainingData[0])-2)
+
     print("Plotting confusion matrix and finding error rate for testing data...")
     confMatrix2 = confusionMatrixCalc(W, testingData)
-    plotConfusionMatrix(confMatrix2)
+    plotConfusionMatrix(confMatrix2, len(trainingData[0])-2)
 
     ## Task 2 ##
     ### Plot histograms of dataset ###
@@ -90,11 +89,11 @@ def main():
 
     print("Plotting confusion matrix and finding error rate for training data...")
     confMatrix = confusionMatrixCalc(W, trainingData)
-    plotConfusionMatrix(confMatrix)
+    plotConfusionMatrix(confMatrix, len(trainingData[0])-2)
 
     print("Plotting confusion matrix and finding error rate for testing data...")
     confMatrix2 = confusionMatrixCalc(W, testingData)
-    plotConfusionMatrix(confMatrix2)
+    plotConfusionMatrix(confMatrix2, len(trainingData[0])-2)
 
     print("Now removing one more feature (the one with most overlap)...")
     print("which is sepal length")
@@ -109,11 +108,11 @@ def main():
 
     print("Plotting confusion matrix and finding error rate for training data...")
     confMatrix = confusionMatrixCalc(W, trainingData)
+    plotConfusionMatrix(confMatrix, len(trainingData[0])-2)
 
-    plotConfusionMatrix(confMatrix)
     print("Plotting confusion matrix and finding error rate for testing data...")
     confMatrix2 = confusionMatrixCalc(W, testingData)
-    plotConfusionMatrix(confMatrix2)
+    plotConfusionMatrix(confMatrix2, len(trainingData[0])-2)
 
 
     print("Removing petal length, so only petal width is used is classifier")
@@ -128,10 +127,11 @@ def main():
 
     print("Plotting confusion matrix and finding error rate for training data...")
     confMatrix = confusionMatrixCalc(W, trainingData)
-    plotConfusionMatrix(confMatrix)
+    plotConfusionMatrix(confMatrix, len(trainingData[0])-2)
+
     print("Plotting confusion matrix and finding error rate for testing data...")
     confMatrix2 = confusionMatrixCalc(W, testingData)
-    plotConfusionMatrix(confMatrix2)
+    plotConfusionMatrix(confMatrix2, len(trainingData[0])-2)
 
 
 def scatterPlot(data):
@@ -142,13 +142,12 @@ def scatterPlot(data):
     iris_versicolor = iris.loc[iris["Species"]=="1.0"]
     iris_virginica = iris.loc[iris["Species"]=="2.0"]
 
-    fig, axes = plt.subplots(2, 2, figsize=(6,6))
-    fig.suptitle("Scatter plot of species with certain features")
+    fig, axes = plt.subplots(2, 2, figsize=(8,6.5))
+    fig.suptitle("Scatter plot of Iris types with different features")
 
     #sepal length
-    slp = sns.scatterplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal width [cm]", y="Sepal length [cm]", palette='copper')
+    slp = sns.scatterplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal width [cm]", y="Sepal length [cm]")#, palette='copper')
     slp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
-    #plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     #sepal width
     swp = sns.scatterplot(ax=axes[0,1], data=iris, hue="Species", x="Petal width [cm]", y="Petal length [cm]", palette='copper')
     swp.legend(title='Species', loc='upper left', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
@@ -179,7 +178,7 @@ def normalize(data):
     return data
 
 
-def training(trainingData, nIterations, alpha = 0.05):
+def training(trainingData, nIterations, alpha = 0.04):
 
     ''' Training algorithm
 
@@ -194,6 +193,7 @@ def training(trainingData, nIterations, alpha = 0.05):
 
     '''
 
+
     nFeatures = trainingData.shape[1]-2
     W = np.zeros((nClasses, nFeatures+1))
     tk_temp = np.zeros((nClasses, 1))
@@ -203,11 +203,16 @@ def training(trainingData, nIterations, alpha = 0.05):
 
     for i in range(nIterations):
         G_W_MSE = 0
-
+        t = 0
         for xk in trainingData: ## Iterating through each sample
 
             zk = np.matmul(W,(xk[:-1]))[np.newaxis].T
+            #print("zk", zk)
             gk = sigmoid(zk)
+            #print("gk", gk)
+            t+=1
+            #if t>=20:
+            #    quit()
 
             ## Updating target vector
             tk_temp *= 0
@@ -217,7 +222,7 @@ def training(trainingData, nIterations, alpha = 0.05):
             # Finding gradients for MSE calculation
             G_gk_MSE = gk-tk
             G_zk_g = np.multiply(gk, (1-gk))
-            G_W_zk = xk[:-1].reshape(1,nFeatures+1) ### la til +1 her
+            G_W_zk = xk[:-1].reshape(1,nFeatures+1)
 
 
             G_W_MSE += np.matmul(np.multiply(G_gk_MSE, (1-gk)), G_W_zk) ## Eq 22 from compendium
@@ -241,31 +246,32 @@ def training(trainingData, nIterations, alpha = 0.05):
 
 
 
-def confusionMatrixCalc(W, testingData):
+def confusionMatrixCalc(W, data):
     ''' Function which calculates the confusion matrix
         from trained classifier weight matrix and testing data.
     '''
 
     confusionMatrix = np.zeros((nClasses, nClasses), dtype='int')
-    #print("Herda", range(len(testingData)))
-    for i in range(len(testingData)):
+
+    for i in range(len(data)):
         ### Predicting class by using weight matrix
-        classPrediction = int(np.argmax(np.matmul(W, testingData[i,0:testingData.shape[1]-1])))
+        classPrediction = int(np.argmax(np.matmul(W, data[i,0:data.shape[1]-1])))
         ### Retreiving actual class
-        classActual = int(testingData[i, -1])
+        classActual = int(data[i, -1])
         ### Adding prediction to confusion matrix
         confusionMatrix[classPrediction, classActual] += 1
 
-    print("Confusion matrix", confusionMatrix)
+    print("Confusion matrix \n")
+    print(confusionMatrix)
     return confusionMatrix
 
 
-def plotConfusionMatrix(confusionMatrix):
+def plotConfusionMatrix(confusionMatrix, nFeatures):
     ''' Function which plots confusion matrix as heat map with
         calculated error rate.
     '''
     ## Plotting
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8, 6.5))
     im = ax.imshow(confusionMatrix, cmap='copper')
     ax.set_xticks(np.arange(0, nClasses))
     ax.set_yticks(np.arange(0, nClasses))
@@ -277,7 +283,7 @@ def plotConfusionMatrix(confusionMatrix):
     ### Plotting error rate within heat map ###
     errorRate = findErrorRate(confusionMatrix)
     print("errorRate = ", errorRate)
-    textstr = ('Error rate = %.1f %%\n nTraining = 30' %(errorRate))
+    textstr = ('Error rate = %.1f %%\n nTraining = 30 \n nFeatures = %d' %(errorRate, nFeatures))
     textBox = dict(boxstyle='round', facecolor='white', alpha=0.5)
     ax.text(0.60, 0.97, textstr, transform=ax.transAxes, fontsize=10,
         verticalalignment='top', bbox=textBox)
@@ -316,7 +322,7 @@ def plotHistograms(data):
     iris_versicolor = iris.loc[iris["Species"]=="1.0"]
     iris_virginica = iris.loc[iris["Species"]=="2.0"]
 
-    fig, axes = plt.subplots(2, 2, figsize=(8,8))
+    fig, axes = plt.subplots(2, 2, figsize=(8,6.5))
     fig.suptitle("Distribution of species based on features, bin width=0.5cm")
     #sepal length
     slp = sns.histplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal length [cm]", kde=True, binwidth=0.1, palette='copper')
