@@ -23,10 +23,11 @@ features = ['Sepal length', 'Sepal width', 'Petal length', 'Petal width']
 def main():
     print("Loading iris dataset...")
     data = loadData()
+    scatterData = loadScatterData()
 
     ## Scatter plot
     print("Plotting scatterplot of iris data...")
-    scatterPlot(data)
+    scatterPlot(scatterData)
 
     ### SLETT ETTERPÅ
     print("Plotting histograms of species and features...")
@@ -137,29 +138,36 @@ def main():
     plotConfusionMatrix(confMatrix2, len(trainingData[0])-2)
 
 
-def scatterPlot(data):
+def scatterPlot(scatterData):
     col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Species']
-    iris = pd.DataFrame(data, columns=col)
+    iris = pd.DataFrame(scatterData, columns=col)
+    iris['Sepal length [cm]'] = iris['Sepal length [cm]'].astype(float)
+    iris['Sepal width [cm]'] = iris['Sepal width [cm]'].astype(float)
+    iris['Petal length [cm]'] = iris['Petal length [cm]'].astype(float)
+    iris['Petal width [cm]'] = iris['Petal width [cm]'].astype(float)
 
-    iris_setosa = iris.loc[iris["Species"]=="0.0"]
-    iris_versicolor = iris.loc[iris["Species"]=="1.0"]
-    iris_virginica = iris.loc[iris["Species"]=="2.0"]
+
+
+    iris_setosa = iris.loc[iris["Species"]=="Iris-setosa"]
+    iris_versicolor = iris.loc[iris["Species"]=="Iris-versicolor"]
+    iris_virginica = iris.loc[iris["Species"]=="Iris-virginica"]
+    
 
     fig, axes = plt.subplots(2, 2, figsize=(8,6.5))
     fig.suptitle("Scatter plot of Iris types with different features")
 
     #sepal length
-    slp = sns.scatterplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal width [cm]", y="Sepal length [cm]")#, palette='copper')
-    slp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
+    slp = sns.scatterplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal width [cm]", y="Sepal length [cm]", palette='copper', legend='auto')
+    slp.legend(loc='upper right', prop={'size': 6})
     #sepal width
-    swp = sns.scatterplot(ax=axes[0,1], data=iris, hue="Species", x="Petal width [cm]", y="Petal length [cm]", palette='copper')
-    swp.legend(title='Species', loc='upper left', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
+    swp = sns.scatterplot(ax=axes[0,1], data=iris, hue="Species", x="Petal width [cm]", y="Petal length [cm]", palette='copper', legend='auto')
+    swp.legend(loc='upper left', prop={'size': 6})
     #petal length
-    plp = sns.scatterplot(ax=axes[1,0], data=iris, hue="Species", x="Sepal width [cm]", y="Petal length [cm]", palette='copper')
-    plp.legend(title='Species', loc='upper right', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
+    plp = sns.scatterplot(ax=axes[1,0], data=iris, hue="Species", x="Sepal width [cm]", y="Petal length [cm]", palette='copper', legend='auto')
+    plp.legend(loc='upper right', prop={'size': 6})
     #petal width
-    pwp = sns.scatterplot(ax=axes[1,1], data=iris, hue="Species", x="Petal width [cm]", y="Sepal length [cm]", palette='copper')
-    pwp.legend(title='Species', loc='upper left', labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'], prop={'size': 6})
+    pwp = sns.scatterplot(ax=axes[1,1], data=iris, hue="Species", x="Petal width [cm]", y="Sepal length [cm]", palette='copper', legend='auto')
+    pwp.legend(loc='upper left', prop={'size': 6})
     plt.show()
 
 
@@ -396,6 +404,15 @@ def loadData():
     ### Converting from string to float
     data = rawData.astype(float)
     return data
+
+def loadScatterData():
+    scatterData = np.genfromtxt(irisDataLoc, dtype = str, delimiter=',',)
+
+    for i, val in enumerate(scatterData):
+        classID = 'Setosa' if val[-1] == 'Iris-setosa' else 'Versicolor' if val[-1] == 'Iris-versicolor' else 'Virginica'
+        scatterData[i][4] = classID
+
+    return scatterData
 
 if __name__ == '__main__':
     main()
