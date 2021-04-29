@@ -30,7 +30,7 @@ def main():
     scatterPlot(scatterData)
 
     ### SLETT ETTERPÅ
-    print("Plotting histograms of species and features...")
+    print("Plotting histograms of types and features...")
     plotHistograms(data)
 
 
@@ -77,7 +77,7 @@ def main():
 
     ## Task 2 ##
     ### Plot histograms of dataset ###
-    print("Plotting histograms of species and features...")
+    print("Plotting histograms of types and features...")
     plotHistograms(data)
 
     #### Removing features and repeating ####
@@ -139,7 +139,7 @@ def main():
 
 
 def scatterPlot(scatterData):
-    col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Species']
+    col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Type']
     iris = pd.DataFrame(scatterData, columns=col)
     iris['Sepal length [cm]'] = iris['Sepal length [cm]'].astype(float)
     iris['Sepal width [cm]'] = iris['Sepal width [cm]'].astype(float)
@@ -148,25 +148,25 @@ def scatterPlot(scatterData):
 
 
 
-    iris_setosa = iris.loc[iris["Species"]=="Iris-setosa"]
-    iris_versicolor = iris.loc[iris["Species"]=="Iris-versicolor"]
-    iris_virginica = iris.loc[iris["Species"]=="Iris-virginica"]
+    iris_setosa = iris.loc[iris["Type"]=="Iris-setosa"]
+    iris_versicolor = iris.loc[iris["Type"]=="Iris-versicolor"]
+    iris_virginica = iris.loc[iris["Type"]=="Iris-virginica"]
     
 
     fig, axes = plt.subplots(2, 2, figsize=(8,6.5))
     fig.suptitle("Scatter plot of Iris types with different features")
 
     #sepal length
-    slp = sns.scatterplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal width [cm]", y="Sepal length [cm]", palette='copper', legend='auto')
+    slp = sns.scatterplot(ax=axes[0,0], data=iris, hue="Type", x="Sepal width [cm]", y="Sepal length [cm]", palette='copper', legend='auto')
     slp.legend(loc='upper right', prop={'size': 6})
     #sepal width
-    swp = sns.scatterplot(ax=axes[0,1], data=iris, hue="Species", x="Petal width [cm]", y="Petal length [cm]", palette='copper', legend='auto')
+    swp = sns.scatterplot(ax=axes[0,1], data=iris, hue="Type", x="Petal width [cm]", y="Petal length [cm]", palette='copper', legend='auto')
     swp.legend(loc='upper left', prop={'size': 6})
     #petal length
-    plp = sns.scatterplot(ax=axes[1,0], data=iris, hue="Species", x="Sepal width [cm]", y="Petal length [cm]", palette='copper', legend='auto')
+    plp = sns.scatterplot(ax=axes[1,0], data=iris, hue="Type", x="Sepal width [cm]", y="Petal length [cm]", palette='copper', legend='auto')
     plp.legend(loc='upper right', prop={'size': 6})
     #petal width
-    pwp = sns.scatterplot(ax=axes[1,1], data=iris, hue="Species", x="Petal width [cm]", y="Sepal length [cm]", palette='copper', legend='auto')
+    pwp = sns.scatterplot(ax=axes[1,1], data=iris, hue="Type", x="Petal width [cm]", y="Sepal length [cm]", palette='copper', legend='auto')
     pwp.legend(loc='upper left', prop={'size': 6})
     plt.show()
 
@@ -250,6 +250,12 @@ def training(trainingData, nIterations, alpha = 0.04):
     plt.title("MSE converging over %d iterations "\
               "when %d features are used" %(nIterations, nFeatures))
     plt.plot(MSE)
+
+    # textbox with final MSE converging value
+    mseval = MSE[-1]
+    textstr = ('MSE final value, %.2f' %(mseval))
+    textBox = dict(boxstyle='round', facecolor='white', alpha=0.5) 
+    plt.annotate('\n MSE converging value: %.2f \n' %mseval, xy=(0.56, 0.84), xycoords='axes fraction', bbox=textBox)
     plt.show()
 
     print("Weight matrix = ", W)
@@ -325,29 +331,29 @@ def plotHistograms(data):
     ''' Function for plotting histogram of iris dataset with its classes by
         different features.
     '''
-    #Parse iris-data and histogramplot datasets in species with features format
-    col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Species']
+    #Parse iris-data and histogramplot datasets in types with features format
+    col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Types']
     iris = pd.DataFrame(data, columns=col)
     print(iris)
 
-    iris_setosa = iris.loc[iris["Species"]=="0.0"]
-    iris_versicolor = iris.loc[iris["Species"]=="1.0"]
-    iris_virginica = iris.loc[iris["Species"]=="2.0"]
+    iris_setosa = iris.loc[iris["Types"]=="0.0"]
+    iris_versicolor = iris.loc[iris["Types"]=="1.0"]
+    iris_virginica = iris.loc[iris["Types"]=="2.0"]
 
     fig, axes = plt.subplots(2, 2, figsize=(8,6.5))
-    fig.suptitle("Distribution of species based on features, bin width=0.5cm")
+    fig.suptitle("Distribution of Iris types based on features")
     #sepal length                   labels=['Iris setosa', 'Iris versicolor', 'Iris virginica']
-    slp = sns.histplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal length [cm]", kde=True, binwidth=0.1, palette='copper')
-    slp.legend(title='Species', loc='upper right', labels=['Iris virginica', 'Iris versicolor', 'Iris setosa'])
+    slp = sns.histplot(ax=axes[0,0], data=iris, hue="Types", x="Sepal length [cm]", kde=True, binwidth=0.1, palette='copper')
+    slp.legend(title='Types', loc='upper right', labels=['Virginica', 'Versicolor', 'Setosa'])
     #sepal width
-    swp = sns.histplot(ax=axes[0,1], data=iris, hue="Species", x="Sepal width [cm]", kde=True, binwidth=0.1, palette='copper')
-    swp.legend(title='Species', loc='upper right', labels=['Iris virginica', 'Iris versicolor', 'Iris setosa'])
+    swp = sns.histplot(ax=axes[0,1], data=iris, hue="Types", x="Sepal width [cm]", kde=True, binwidth=0.1, palette='copper')
+    swp.legend(title='Types', loc='upper right', labels=['Virginica', 'Versicolor', 'Setosa'])
     #petal length
-    plp = sns.histplot(ax=axes[1,0], data=iris, hue="Species", x="Petal length [cm]", kde=True, binwidth=0.1, palette='copper')
-    plp.legend(title='Species', loc='upper right', labels=['Iris virginica', 'Iris versicolor', 'Iris setosa'])
+    plp = sns.histplot(ax=axes[1,0], data=iris, hue="Types", x="Petal length [cm]", kde=True, binwidth=0.1, palette='copper')
+    plp.legend(title='Types', loc='upper right', labels=['Virginica', 'Versicolor', 'Setosa'])
     #petal width
-    pwp = sns.histplot(ax=axes[1,1], data=iris, hue="Species", x="Petal width [cm]", kde=True, binwidth=0.1, palette='copper')
-    pwp.legend(title='Species', loc='upper right', labels=['Iris virginica', 'Iris versicolor', 'Iris setosa'])
+    pwp = sns.histplot(ax=axes[1,1], data=iris, hue="Types", x="Petal width [cm]", kde=True, binwidth=0.1, palette='copper')
+    pwp.legend(title='Types', loc='upper right', labels=['Virginica', 'Versicolor', 'Setosa'])
     plt.show()
 
 def sigmoid(x):
