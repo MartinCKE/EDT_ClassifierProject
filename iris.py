@@ -22,21 +22,24 @@ features = ['Sepal length', 'Sepal width', 'Petal length', 'Petal width']
 
 def main():
     print("Loading iris dataset...")
-    data = loadData()
-    scatterData = loadScatterData()
+    rawData = loadData()
 
     ## Scatter plot
     print("Plotting scatterplot of iris data...")
+<<<<<<< HEAD
     scatterPlot(scatterData)
 
     ### SLETT ETTERPÅ
     print("Plotting histograms of types and features...")
     plotHistograms(data)
 
+=======
+    scatterPlot(rawData)
+>>>>>>> 91c1087d86f075ea18025a075a6f95cf8cb1905c
 
     ### Normalizing data ###
     print("Normalizing data...")
-    data = normalize(data)
+    data = normalize(rawData)
 
     #### Training and classifying ####
 
@@ -59,8 +62,8 @@ def main():
     plotConfusionMatrix(confMatrix2, len(trainingData[0])-2)
 
     #Task 1 d-e ##
-    nTraining = 30
-    nIterations = 4000
+    #nTraining = 30
+    #nIterations = 4000
     trainingData, testingData = splitData(data, nTraining, Flip=True)
 
     print("Training classifier with %d iterations and %d training " \
@@ -77,8 +80,13 @@ def main():
 
     ## Task 2 ##
     ### Plot histograms of dataset ###
+<<<<<<< HEAD
     print("Plotting histograms of types and features...")
     plotHistograms(data)
+=======
+    print("Plotting histograms of species and features...")
+    plotHistograms(rawData)
+>>>>>>> 91c1087d86f075ea18025a075a6f95cf8cb1905c
 
     #### Removing features and repeating ####
     print("Removing feature with most overlap...")
@@ -138,6 +146,7 @@ def main():
     plotConfusionMatrix(confMatrix2, len(trainingData[0])-2)
 
 
+<<<<<<< HEAD
 def scatterPlot(scatterData):
     col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Type']
     iris = pd.DataFrame(scatterData, columns=col)
@@ -152,10 +161,22 @@ def scatterPlot(scatterData):
     iris_versicolor = iris.loc[iris["Type"]=="Iris-versicolor"]
     iris_virginica = iris.loc[iris["Type"]=="Iris-virginica"]
     
+=======
+def scatterPlot(data):
+    col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Species']
+    iris = pd.DataFrame(data, columns=col)
 
+    ## Changing class ID back to text for plotting ##
+    iris['Species'] = iris['Species'].replace([0.0], 'Iris Setosa')
+    iris['Species'] = iris['Species'].replace([1.0], 'Iris Versicolor')
+    iris['Species'] = iris['Species'].replace([2.0], 'Iris Virginica')
+>>>>>>> 91c1087d86f075ea18025a075a6f95cf8cb1905c
+
+    ## Make plot ##
     fig, axes = plt.subplots(2, 2, figsize=(8,6.5))
     fig.suptitle("Scatter plot of Iris types with different features")
 
+<<<<<<< HEAD
     #sepal length
     slp = sns.scatterplot(ax=axes[0,0], data=iris, hue="Type", x="Sepal width [cm]", y="Sepal length [cm]", palette='copper', legend='auto')
     slp.legend(loc='upper right', prop={'size': 6})
@@ -168,10 +189,21 @@ def scatterPlot(scatterData):
     #petal width
     pwp = sns.scatterplot(ax=axes[1,1], data=iris, hue="Type", x="Petal width [cm]", y="Sepal length [cm]", palette='copper', legend='auto')
     pwp.legend(loc='upper left', prop={'size': 6})
+=======
+    #sepal length labels=['Iris setosa', 'Iris versicolor', 'Iris virginica'],
+    slp = sns.scatterplot(ax=axes[0,0], data=iris, hue="Species", x="Sepal width [cm]", y="Sepal length [cm]", palette='copper')
+    slp.legend(title='Species', loc='upper right',  prop={'size': 6})
+    #sepal width
+    swp = sns.scatterplot(ax=axes[0,1], data=iris, hue="Species", x="Petal width [cm]", y="Petal length [cm]", palette='copper')
+    swp.legend(title='Species', loc='upper left', prop={'size': 6})
+    #petal length
+    plp = sns.scatterplot(ax=axes[1,0], data=iris, hue="Species", x="Sepal width [cm]", y="Petal length [cm]", palette='copper')
+    plp.legend(title='Species', loc='upper right', prop={'size': 6})
+    #petal width
+    pwp = sns.scatterplot(ax=axes[1,1], data=iris, hue="Species", x="Petal width [cm]", y="Sepal length [cm]", palette='copper')
+    pwp.legend(title='Species', loc='upper left', prop={'size': 6})
+>>>>>>> 91c1087d86f075ea18025a075a6f95cf8cb1905c
     plt.show()
-
-
-
 
 
 def findErrorRate(X):
@@ -334,14 +366,17 @@ def plotHistograms(data):
     #Parse iris-data and histogramplot datasets in types with features format
     col=['Sepal length [cm]','Sepal width [cm]','Petal length [cm]','Petal width [cm]','Types']
     iris = pd.DataFrame(data, columns=col)
-    print(iris)
 
     iris_setosa = iris.loc[iris["Types"]=="0.0"]
     iris_versicolor = iris.loc[iris["Types"]=="1.0"]
     iris_virginica = iris.loc[iris["Types"]=="2.0"]
 
     fig, axes = plt.subplots(2, 2, figsize=(8,6.5))
+<<<<<<< HEAD
     fig.suptitle("Distribution of Iris types based on features")
+=======
+    fig.suptitle("Histogram of Iris types based on features")
+>>>>>>> 91c1087d86f075ea18025a075a6f95cf8cb1905c
     #sepal length                   labels=['Iris setosa', 'Iris versicolor', 'Iris virginica']
     slp = sns.histplot(ax=axes[0,0], data=iris, hue="Types", x="Sepal length [cm]", kde=True, binwidth=0.1, palette='copper')
     slp.legend(title='Types', loc='upper right', labels=['Virginica', 'Versicolor', 'Setosa'])
@@ -400,7 +435,7 @@ def loadData():
     ''' Function for reading data from file and assigning class ID '''
 
     ### Reading from file ###
-    rawData = np.genfromtxt(irisDataLoc, dtype = str, delimiter=',',)
+    rawData = np.genfromtxt(irisDataLoc, dtype = str, delimiter=',')
 
     ### Assigning class ID instead of informative string ###
     for i, val in enumerate(rawData):
@@ -410,15 +445,6 @@ def loadData():
     ### Converting from string to float
     data = rawData.astype(float)
     return data
-
-def loadScatterData():
-    scatterData = np.genfromtxt(irisDataLoc, dtype = str, delimiter=',',)
-
-    for i, val in enumerate(scatterData):
-        classID = 'Setosa' if val[-1] == 'Iris-setosa' else 'Versicolor' if val[-1] == 'Iris-versicolor' else 'Virginica'
-        scatterData[i][4] = classID
-
-    return scatterData
 
 if __name__ == '__main__':
     main()
