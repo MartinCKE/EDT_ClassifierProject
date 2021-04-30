@@ -1,3 +1,7 @@
+''' Vowels task python script for classification project in TTT4275 - EDC
+    by Einar Avdem & Martin Ericsson
+'''
+
 import numpy as np
 import os
 from sklearn.mixture import GaussianMixture as GMM
@@ -6,43 +10,12 @@ from scipy.stats import multivariate_normal
 import matplotlib.pyplot as plt
 import seaborn as sn
 
-
-'''
-Filenames:
-character 1:     m=man, w=woman, b=boy, g=girl
-characters 2-3:  talker number
-characters 4-5:  vowel (ae="had", ah="hod", aw="hawed", eh="head", er="heard",
-                        ei="haid", ih="hid", iy="heed", oa=/o/ as in "boat",
-                        oo="hood", uh="hud", uw="who'd")
-
-col1:  filename
-col2:  duration in msec
-col3:  f0 at "steady state"
-col4:  F1 at "steady state"
-col5:  F2 at "steady state"
-col6:  F3 at "steady state"
-col7:  F4 at "steady state"
-col8:  F1 at 20% of vowel duration
-col9:  F2 at 20% of vowel duration
-col10: F3 at 20% of vowel duration
-col11: F1 at 50% of vowel duration
-col12: F2 at 50% of vowel duration
-col13: F3 at 50% of vowel duration
-col14: F1 at 80% of vowel duration
-col15: F2 at 80% of vowel duration
-col16: F3 at 80% of vowel duration
-
-'''
-
 vowels = ['ae','ah','aw','eh','er','ei','ih','iy','oa','oo','uh','uw']
-talkers = ['m', 'w', 'b', 'g']
-
 
 def main():
     global features
     nTraining = 70
-    features=range(3,7) ## F1, F2, F3 and F4
-    #M = 2
+    features=range(7,16)
 
     types, data = loadData(features)
 
@@ -59,7 +32,6 @@ def main():
     print("Testing classifier and plotting confusion matrix...")
     confMatrix = confusionMatrixCalc(predictions, actualVowels)
     plotConfusionMatrix(confMatrix)
-    print(confMatrix)
 
     ### Task 1 c ###
     print("Training single gaussian mixture classifier with diagonal covariance matrix.")
@@ -68,8 +40,6 @@ def main():
     print("Testing classifier and plotting confusion matrix...")
     confMatrix = confusionMatrixCalc(predictions, actualVowels)
     plotConfusionMatrix(confMatrix)
-    print(confMatrix)
-
 
     ### Task 2 a-b ###
     print("Starting task 2")
@@ -81,7 +51,6 @@ def main():
     print("Testing classifier and plotting confusion matrix...")
     confMatrix = confusionMatrixCalc(predictions, actualVowels)
     plotConfusionMatrix(confMatrix)
-    print(confMatrix)
 
     ## Task 2 c ##
     print("Training multiple gaussian mixture classifier with full covariance matrix.")
@@ -92,7 +61,6 @@ def main():
     print("Testing classifier and plotting confusion matrix...")
     confMatrix = confusionMatrixCalc(predictions, actualVowels)
     plotConfusionMatrix(confMatrix)
-    print(confMatrix)
 
 def findErrorRate(X):
     ''' Calculates error rate from confusion matrix '''
@@ -101,7 +69,7 @@ def findErrorRate(X):
 
 def getMeanAndCovariance(df, features, vowel, diag=False):
     '''
-        Function which finds mean and covariance of given vowel and
+        Calculates mean and covariance of given vowel and
         features to use.
     '''
     vowelDataFrame = df.loc[vowel]
@@ -114,7 +82,8 @@ def getMeanAndCovariance(df, features, vowel, diag=False):
     return mean, cov
 
 def confusionMatrixCalc(predictions, actualVowels, diag=False):
-
+    ''' Builds confusion matrix based on classifier predictions and actual class.
+    '''
     confMatrix = np.zeros((len(vowels), len(vowels)))
 
     for i in range(len(predictions)):
@@ -158,13 +127,13 @@ def plotConfusionMatrix(confusionMatrix):
 
 
 def GMMTesting(GaussianMixtureModels, testingData, M):
-
+    ''' Tests the GMM classifier by using mixture models to find  the
+        largest probabilities from input testing samples and predicting class.
+    '''
     probabilities = np.zeros((len(vowels), len(testingData)))
 
     for i, vowel in enumerate(vowels):
-
-        GaussianMixtureModel = GaussianMixtureModels[i]
-
+        GaussianMixtureModel = GaussianMixtureModels[i] ## Get model for current vowel
         for j in range(M):
             curve = multivariate_normal(mean=GaussianMixtureModel.means_[j],
                                         cov=GaussianMixtureModel.covariances_[j], allow_singular=True)
@@ -172,49 +141,56 @@ def GMMTesting(GaussianMixtureModels, testingData, M):
 
     predictions = np.argmax(probabilities, axis=0)
     actualVowels = testingData.index.values
+
     return predictions, actualVowels
 
 def GMMTraining(trainingData, M):
+    ''' Trains the GMM classifier by bulding mixure models from training vowel
+        samples, using GMM method.
+    '''
 
     GaussianMixtureModels = []
-
     for vowel in vowels:
         trainingVowelData = trainingData.loc[vowel].values
-
-        gmm = GMM(n_components=M, covariance_type='diag') #,reg_covar=1e-4, random_state=0)
+        gmm = GMM(n_components=M, covariance_type='diag',reg_covar=1e-4, random_state=0)
         gmm.fit(trainingVowelData)
         GaussianMixtureModels.append(gmm)
 
     return GaussianMixtureModels
 
 def singleGMTraining(trainingData, diag=False):
-
+    ''' Trains the single Gaussian mode classifier by building multivariate models
+        from the input training vowel data
+    '''
     vowelModels = list()
 
     for vowel in vowels:
         mean, covariance = getMeanAndCovariance(trainingData, features, vowel, diag)
-
         multiVariateModel = multivariate_normal(mean = mean, cov=covariance)
         vowelModels.append(multiVariateModel)
 
     return vowelModels
 
 def singleGMTesting(vowelModels, testingData):
-
+    ''' Tests the single Gaussian classifier by using the multivariate vowel models
+        against testing samples, where class prediction is decided from largest
+        probability value
+    '''
     probabilities = np.zeros((len(vowels), len(testingData)))
 
     for i, vowel in enumerate(vowels):
         i_vowel = vowelModels[i]
         probabilities[i] = i_vowel.pdf(testingData.values)
-    print(probabilities)
 
     predictions = np.argmax(probabilities, axis=0)
-
     actualVowels = testingData.index.values
 
     return predictions, actualVowels
 
 def splitData(df, nTraining):
+    ''' Splits data in to training and testing sub-sets
+    '''
+
     trainingdf = pd.DataFrame()
     testingdf = pd.DataFrame()
 
@@ -225,10 +201,8 @@ def splitData(df, nTraining):
 
 
 def loadData(features):
+    ''' Loads raw feature data from vowels data file
     '''
-        features = which features to use
-    '''
-
 
     rawData = np.genfromtxt('./Data/Wovels/vowdata_nohead.dat', dtype = str, delimiter=',',)
     types = list()
